@@ -1,0 +1,226 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Fullstack Jamstack Test</title>
+    <meta name="description" content="A simple HTML5 Jamstack/Fullstack test">
+    <meta name="author" content="Davide">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">   
+</head>
+
+<body>
+    <div class="container">
+            <h1 class="display-3">Session Search</h1>                
+            <div class="mb-3">                                
+                <div id="signIn"><button class="btn btn-link" onclick="signIn()">Sign-in</button></div>
+                <div id="signOut" class="d-none"><label id="welcome">Welcome!</label><br/><button class="btn btn-link" onclick="signOut()">Sign-out</label></div>
+            </div>
+        <div class="input-group mb-3">
+            <input id="filter" type="text" class="form-control" placeholder="Session Title">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" onclick="search()">Search</button>
+            </div>
+        </div>
+        <div id="sessions">
+            <ul class="list-group">
+            </ul>
+        </div>
+    </div>    
+    <script id="load-msal" src="https://alcdn.msauth.net/browser/2.31.0/js/msal-browser.js" integrity="sha384-BO4qQ2RTxj2akCJc7t6IdU9aRg6do4LGIkVVa01Hm33jxM+v2G+4q+vZjmOCywYq" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha384-UG8ao2jwOWB7/oDdObZc6ItJmwUkR/PfMyt9Qs5AwX7PsnYn1CRKCTWyncPTWvaS" crossorigin="anonymous"></script>
+    <script src="authConfig.js"></script>
+    <script>
+        const signInButton = document.getElementById("signIn");
+        const signOutButton = document.getElementById("signOut");
+        const welcomeMessage = document.getElementById("welcome");
+
+        let username = "";        
+
+        const msalConfig = {
+            auth: {
+                ...authConfig,
+                redirectUri: "http://localhost:5500",
+            },
+            cache: {
+                cacheLocation: "sessionStorage",
+                storeAuthStateInCookie: false,
+            },
+            system: {
+                loggerOptions: {
+                    loggerCallback: (level, message, containsPii) => {
+                        if (containsPii) {
+                            return;
+                        }
+                        switch (level) {
+                            case msal.LogLevel.Error:
+                                console.error(message);
+                                return;
+                            case msal.LogLevel.Info:
+                                console.info(message);
+                                return;
+                            case msal.LogLevel.Verbose:
+                                console.debug(message);
+                                return;
+                            case msal.LogLevel.Warning:
+                                console.warn(message);
+                                return;
+                        }
+                    }
+                }
+            }
+        };
+
+        const loginRequest = {
+            scopes: ["User.Read"]
+        };
+
+        const tokenRequest = {
+            scopes: [...requestScopes],
+            forceRefresh: false
+        };
+
+        const myMSALObj = new msal.PublicClientApplication(msalConfig);
+
+        function afterSignIn(username) {
+            signInButton.setAttribute('class', "d-none")            
+            signOutButton.setAttribute('class', "")
+            welcomeMessage.setAttribute('class', "")
+            welcomeMessage.innerHTML = `Welcome ${username}!`
+            search()
+        }
+
+        function afterSignOut() {
+            signInButton.setAttribute('class', "")
+            signOutButton.setAttribute('class', "d-none")                                    
+            search()
+        }
+
+        function selectAccount() {
+            const currentAccounts = myMSALObj.getAllAccounts();
+            if (currentAccounts.length === 0) {
+                return;
+            } else if (currentAccounts.length > 1) {
+                // Add choose account code here
+                console.warn("Multiple accounts detected.");
+            } else if (currentAccounts.length === 1) {
+                username = currentAccounts[0].username;
+                afterSignIn(username);
+            }
+        }
+
+        function handleResponse(response) {
+            if (response !== null) {
+                username = response.account.username;
+                afterSignIn(username);
+            } else {
+                selectAccount();
+            }
+        }
+
+        function signIn() {
+            myMSALObj.loginPopup(loginRequest)
+                .then(handleResponse)
+                .catch(error => {
+                    console.error(error);
+                });
+        }
+
+        function signOut() {
+            const logoutRequest = {
+                account: myMSALObj.getAccountByUsername(username)
+            };
+
+            myMSALObj
+                .logoutPopup(logoutRequest)
+                .then(afterSignOut)
+                .catch(error => {
+                    console.error(error);
+                });    
+            
+            populateSessionsList();
+        }
+
+        function getTokenPopup(request) {
+            request.account = myMSALObj.getAccountByUsername(username);
+
+            return myMSALObj.acquireTokenSilent(request)
+                .catch(error => {
+                    console.warn("silent token acquisition fails. acquiring token using popup");
+                    if (error instanceof msal.InteractionRequiredAuthError) {                        
+                        return myMSALObj.acquireTokenPopup(request)
+                            .then(tokenResponse => {
+                                console.log(tokenResponse);
+                                return tokenResponse;
+                            }).catch(error => {
+                                console.error(error);
+                            });
+                    } else {
+                        console.warn(error);
+                    }
+                });
+        }        
+
+        async function loadSessions(title = "") {
+            var token = await getTokenPopup(tokenRequest);
+
+            var filter = ""
+            if (title != "") {
+                filter = `filter: { title: { contains: "${title}"}}`
+            }
+            var graphql = `
+                query {
+                    sessions(first:10 ${filter} orderBy: {id: ASC}) {
+                        items {
+                           id
+                           title                           
+                        }
+                    }  
+                }
+            `;
+            var headers = { "Content-Type": "application/json"}
+            if (token != null) headers["Authorization"] = "Bearer " + token.accessToken;
+            var url = "http://localhost:5000/graphql";
+            var response = await fetch(
+                url, {
+                method: "POST",
+                headers,
+                body: JSON.stringify({ "query": graphql })
+            })
+            if (response.ok) {
+                var payload = await response.json();
+                return payload.data?.sessions?.items
+            } else {
+                return [];
+            }
+        }
+
+        function populateSessionsList(filter) {
+            loadSessions(filter).then(result => {
+                var ul = $("#sessions ul");
+                ul.empty();
+                result?.forEach(item => {
+                    var li = $(`<li class='list-group-item'><a href="http://localhost:5000/api/sessions/id/${item.id}">${item.title}</a></li>`);
+                    ul.append(li);
+                })
+            });
+
+        }
+
+        function search() {
+            populateSessionsList($("#filter").val());
+        }
+
+        $(function() {
+            selectAccount();                    
+            populateSessionsList();
+        });
+
+    </script>
+</body>
+
+</html>

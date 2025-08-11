@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "ms-mssql.sql-database-projects-vscode",
+    "ms-mssql.mssql",
+    "ms-vscode.live-server",
+    "humao.rest-client"
+  ]
+}

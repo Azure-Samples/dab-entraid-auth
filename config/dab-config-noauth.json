@@ -1,0 +1,109 @@
+{
+  "$schema": "https://github.com/Azure/data-api-builder/releases/download/v1.5.56/dab.draft.schema.json",
+  "data-source": {
+    "database-type": "mssql",
+    "connection-string": "@env('MSSQL')"
+  },
+  "runtime": {
+    "rest": {
+      "enabled": true,
+      "path": "/api",
+      "request-body-strict": true
+    },
+    "graphql": {
+      "enabled": true,
+      "path": "/graphql",
+      "allow-introspection": true
+    },
+    "host": {
+      "cors": {
+        "origins": [
+          "http://localhost:5500"
+        ],
+        "allow-credentials": false
+      },
+      "authentication": {
+        "provider": "StaticWebApps"
+      },
+      "mode": "development"
+    }
+  },
+  "entities": {
+    "Session": {
+      "source": {
+        "object": "web.sessions",
+        "type": "table"
+      },
+      "graphql": {
+        "enabled": true,
+        "type": {
+          "singular": "Session",
+          "plural": "Sessions"
+        }
+      },
+      "rest": {
+        "enabled": true,
+        "path": "sessions"
+      },
+      "permissions": [
+        {
+          "role": "anonymous",
+          "actions": [
+            {
+              "action": "*"
+            }
+          ]
+        }
+      ],
+      "relationships": {
+        "speakers": {
+          "cardinality": "many",
+          "target.entity": "Speaker",
+          "source.fields": [],
+          "target.fields": [],
+          "linking.object": "web.sessions_speakers",
+          "linking.source.fields": [],
+          "linking.target.fields": []
+        }
+      }
+    },
+    "Speaker": {
+      "source": {
+        "object": "web.speakers",
+        "type": "table"
+      },
+      "graphql": {
+        "enabled": true,
+        "type": {
+          "singular": "Speaker",
+          "plural": "Speakers"
+        }
+      },
+      "rest": {
+        "enabled": true,
+        "path": "/speakers"
+      },
+      "permissions": [
+        {
+          "role": "anonymous",
+          "actions": [
+            {
+              "action": "*"
+            }
+          ]
+        }
+      ],
+      "relationships": {
+        "sessions": {
+          "cardinality": "many",
+          "target.entity": "Session",
+          "source.fields": [],
+          "target.fields": [],
+          "linking.object": "web.sessions_speakers",
+          "linking.source.fields": [],
+          "linking.target.fields": []
+        }
+      }
+    }
+  }
+}

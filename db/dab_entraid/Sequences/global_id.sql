@@ -1,0 +1,6 @@
+CREATE SEQUENCE [web].[global_id]
+    AS INT
+    START WITH 1000000
+    INCREMENT BY 1;
+GO
+

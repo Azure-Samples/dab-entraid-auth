@@ -1,0 +1,43 @@
+### https://learn.microsoft.com/en-us/azure/data-api-builder/concept/api/rest
+
+GET http://localhost:5000/api/sessions
+
+###
+GET http://localhost:5000/api/sessions/id/1001
+
+### 
+GET http://localhost:5000/api/sessions
+    ?$filter=room eq 'Yellow'
+
+###
+GET http://localhost:5000/api/sessions
+    ?$filter=room eq 'Yellow' and day eq 1
+    &$select=id,title,owner,room,day
+    &$first=10
+
+###
+GET http://localhost:5000/api/speakers
+
+###
+POST http://localhost:5000/api/speakers
+Content-Type: application/json
+
+{
+  "full_name": "Mike Brown",
+  "email": "mike.brown@example.com"
+}
+
+### 
+GET http://localhost:5000/api/speakers/id/1000000
+
+
+###
+PATCH http://localhost:5000/api/speakers/id/1000000
+Content-Type: application/json  
+
+{
+  "email": "mbrown@example.com"
+}
+
+###
+DELETE http://localhost:5000/api/speakers/id/1000000
