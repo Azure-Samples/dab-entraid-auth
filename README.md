@@ -171,12 +171,12 @@ The "Session" entity has been configured to allow only `authenticated` requests.
 
 If you have set your Entra ID application to have App Roles, as shown in the following screenshot, for example:
 
-![App Roles](./_assets/19-app-roles.png)
+![App Roles](./_assets/17-app-roles.png)
 
 
 and you have associated a user with a role,
 
-![User Role Association](./_assets/19-app-roles.png)
+![User Role Association](./_assets/18-user-app-roles.png)
 
 
 you can then use that role to have even more granular control over who can access your API endpoints. In the following example, users in the `ConfAdmin` role will be able to perform any CRUD action on the `Session` endpoint:
