@@ -1,5 +1,7 @@
+
 # Authenticate using EntraID with Data API builder from Any JavaScript Client
 
+This repository demonstrates how to securely connect any JavaScript client application to a SQL database using [Data API builder (DAB)](https://aka.ms/dab) with Microsoft Entra ID authentication. It provides sample configurations, database projects, and step-by-step instructions for setting up authentication, deploying the database, and accessing data via REST or GraphQL endpoints.
 
 ## Prerequisites
 
