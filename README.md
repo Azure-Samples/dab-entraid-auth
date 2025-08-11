@@ -15,12 +15,10 @@ This repository demonstrates how to securely connect any JavaScript client appli
 
 ## Deploy the database
 
-
 If you need a SQL Server database, you can use the free SQL Server Developer Edition or the [Azure SQL Free option](https://learn.microsoft.com/en-us/azure/azure-sql/database/free-offer?view=azuresql).
 The easiest way to get started is by using the Docker container for SQL Server. You can find instructions in the [Local SQL Server container](https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/mssql/mssql-local-container?view=sql-server-ver17) documentation.
 
 This README assumes you are using the local SQL Server container for development.
-
 
 Using the SQL Database Projects extension in VS Code, you can build and publish the database project in `./db/dab_entraid`:
 
@@ -34,20 +32,16 @@ The database deployment will start, and in a few seconds you'll have the databas
 
 ## Install and test Data API builder
 
-
 > [!IMPORTANT]
 > This README uses a pre-made Data API builder configuration file, available in the `./config` directory. If you want to create the configuration file from scratch, please follow the instructions in the [`./README-DAB.md`](./README-DAB.md) file.
 
-
 Create a `.env` file in the root of the project by copying the `.env.sample` file. The sample file is already configured to work with the development environment, so unless you want to change something (for example, connect to a different server or database), you can leave it as is.
-
 
 Open the terminal and run:
 
 ```bash
 dotnet tool install Microsoft.DataApibuilder -g
 ```
-
 
 to install Data API builder, then
 
@@ -63,16 +57,13 @@ to run Data API builder. The provided configuration exposes the tables
 
 as REST and GraphQL endpoints, allowing access to anyone, with no need for authentication or authorization.
 
-
 Right-click on the `index.html` file and select "Open with Live Server" to start the application. The simple HTML app uses GraphQL to query the database via the exposed GraphQL endpoint.
-
 
 Since there is no authentication or authorization configured, anyone can access the data. As a result, all the sessions stored in the database are returned and displayed by the HTML page.
 
 ## Add authentication via EntraID
 
 ### Register the Data API builder application
-
 
 Open the Azure Portal and search for "Entra ID"
 
@@ -91,7 +82,6 @@ Name it "Data API builder" and select the most appropriate account type for you.
 Click "Register" and then copy the generated "Application (client) ID".
 
 ![Application (client) ID](./_assets/04-application-id.png)
-
 
 into the Data API builder configuration file. Use the `./config/dab-config-auth.json` file and change it so that the `authentication` section looks like the following (your "Application (client) ID" will be different from the one shown below and in the pictures, which are used just as examples):
 
@@ -133,14 +123,11 @@ Accept the provided Application ID Uri and click on "Save and continue".
 
 ![Save and continue after adding a scope](./_assets/07-add-scope-save-continue.png)
 
-
 Create a scope named `Endpoints.Access`. Allow Admins and/or Users to consent depending on the security level you want to set.
-
 
 Get the "Scope ID" as it will be needed later:
 
 ![Scope ID](./_assets/08-scope-id.png)
-
 
 Now select the "Manifest" item from the left menu, and update the provided JSON so that version 2 of the access token is used. Find the `requestedAccessTokenVersion` in the `api` object and, if not already present or set to `2`, add or update it so that it looks like the following:
 
@@ -148,11 +135,9 @@ Now select the "Manifest" item from the left menu, and update the provided JSON 
 "requestedAccessTokenVersion": 2,
 ```
 
-## Configure Data API builder permissions
-
+### Configure Data API builder permissions
 
 Now Data API builder is able to authenticate users via Entra ID. A sample of the authorization options that Data API builder allows is available in the `./config/dab-config-auth.json` file.
-
 
 The "Session" entity has been configured to allow only `authenticated` requests. The values returned are only those that match the user's identity by comparing the value of the claim `oid` to the value of the column `owner`.
 
@@ -170,16 +155,13 @@ The "Session" entity has been configured to allow only `authenticated` requests.
 ],
 ```
 
-
 If you have set your Entra ID application to have App Roles, as shown in the following screenshot, for example:
 
 ![App Roles](./_assets/17-app-roles.png)
 
-
 and you have associated a user with a role,
 
 ![User Role Association](./_assets/18-user-app-roles.png)
-
 
 you can then use that role to have even more granular control over who can access your API endpoints. In the following example, users in the `ConfAdmin` role will be able to perform any CRUD action on the `Session` endpoint:
 
@@ -201,8 +183,7 @@ you can then use that role to have even more granular control over who can acces
 ],
 ```
 
-## Test Entra ID authorization
-
+### Test Entra ID authorization
 
 Make sure you log in and have access to the created scope in your tenant (replace "<Scope ID>" and "<Tenant ID>" with the values you retrieved in the previous steps):
 
@@ -235,9 +216,7 @@ If your user also has a role assigned, you'll see it in the `roles` section:
   "scp": "Endpoints.Access",
 ```
 
-
 Get the value of the `oid` claim from the decoded token and run the `./db/update-owner.sql` script to update the owner of the session, replacing `OBJECT_ID` with the value you just obtained.
-
 
 The update script will set the user identified by the `oid` as the owner of the session.
 
@@ -263,14 +242,11 @@ Authorization: Bearer {{token}}
 X-MS-API-ROLE: ConfAdmin
 ```
 
-
 All sessions will be returned regardless of the owner.
 
-## Register the Client HTML Application
-
+### Register the Client HTML Application
 
 Now that authentication works, we want to make sure that the client HTML authentication is properly configured for our client application so that there is no need to use `az` to generate the token.
-
 
 Go back to the Azure Portal, Entra ID blade, select "App Registration", and again click on "New Registration", Select the most appropriate account type; for this sample, you can use "Accounts in this organizational directory only (Personal only - Single tenant)", then specify the redirect URI as http://localhost:5500 and select "Single-page application (SPA)" as the platform:
 
@@ -279,7 +255,6 @@ Go back to the Azure Portal, Entra ID blade, select "App Registration", and agai
 Click "Register". Take the "Application (client) ID":
 
 ![Client HTMLApplication (client) ID](./_assets/10-application-client-id-client-html.png)
-
 
 and add it to the `authConfig.js` file:
 
@@ -305,12 +280,11 @@ var authConfig = {
 }
 ```
 
-
 Back in the Azure Portal, click on “Authentication” and make sure that both Access and ID tokens are selected:
 
 ![Client HTML Authentication Configuration](./_assets/11-authentication-client-html.png)
 
-## Allow the client to call the Data API builder API
+### Allow the client to call the Data API builder API
 
 Go back to the "Entra ID" blade and select "App Registrations". Choose "Data API builder".
 
@@ -331,8 +305,7 @@ var requestScopes = [
 ]
 ```
 
-## Test Entra ID authentication with the HTML client application
-
+### Test Entra ID authentication with the HTML client application
 
 Make sure that you have Data API builder running with the correct configuration file:
 
