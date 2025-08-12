@@ -3,6 +3,10 @@
 
 This repository demonstrates how to securely connect any JavaScript client application to a SQL database using [Data API builder (DAB)](https://aka.ms/dab) with Microsoft Entra ID authentication. It provides sample configurations, database projects, and step-by-step instructions for setting up authentication, deploying the database, and accessing data via REST or GraphQL endpoints.
 
+> [!IMPORTANT]
+> If you are deploying Data API builder via Azure Static Web Apps or Azure Container Apps, where you can take advantage of EasyAuth, you don't need to worry too much about Entra ID configuration, as the EasyAuth does a lot of the heavy lifting for you. Check out this video here to see how easy it is to use EasyAuth with DAB: [Authentication and row level-security with Jamstack application in 10 minutes](https://www.youtube.com/watch?v=20zgfmYzHlg&list=PLYA3nHmjWIYE1PUl8_dVR-yKtCLgVhie4&index=4)
+
+
 ## Prerequisites
 
 - [AZ CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
