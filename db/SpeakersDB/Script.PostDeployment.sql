@@ -4,12 +4,12 @@
 if (serverproperty('Edition') = 'SQL Azure') begin
     if not exists (select * from sys.database_principals where [type] in ('E', 'S') and [name] = 'dab_user')
     begin 
-        create user [dab_user] with password = 'P@ssw0rd';
+        create user [dab_user] with password = 'Very_STRON6_P@ssw0rd';
     end      
 end else begin
     if not exists (select * from sys.server_principals where [type] in ('E', 'S') and [name] = 'dab_user')
     begin 
-        create login [dab_user] with password = 'P@ssw0rd'
+        create login [dab_user] with password = 'Very_STRON6_P@ssw0rd'
     end    
 
     if not exists (select * from sys.database_principals where [type] in ('E', 'S') and [name] = 'dab_user')

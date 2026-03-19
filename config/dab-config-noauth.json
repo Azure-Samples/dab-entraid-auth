@@ -1,8 +1,11 @@
 {
-  "$schema": "https://github.com/Azure/data-api-builder/releases/download/v1.5.56/dab.draft.schema.json",
+  "$schema": "https://github.com/Azure/data-api-builder/releases/download/v1.7.90/dab.draft.schema.json",
   "data-source": {
     "database-type": "mssql",
-    "connection-string": "@env('MSSQL')"
+    "connection-string": "@env('MSSQL')",
+    "options": {
+      "set-session-context": false
+    }
   },
   "runtime": {
     "rest": {
@@ -15,15 +18,17 @@
       "path": "/graphql",
       "allow-introspection": true
     },
+    "mcp": {
+      "enabled": true,
+      "path": "/mcp"
+    },
     "host": {
       "cors": {
-        "origins": [
-          "http://localhost:5500"
-        ],
+        "origins": [],
         "allow-credentials": false
       },
       "authentication": {
-        "provider": "StaticWebApps"
+        "provider": "AppService"
       },
       "mode": "development"
     }
@@ -81,7 +86,7 @@
       },
       "rest": {
         "enabled": true,
-        "path": "/speakers"
+        "path": "speakers"
       },
       "permissions": [
         {

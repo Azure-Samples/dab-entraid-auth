@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "sqlproj: Build SpeakersDB",
+			"type": "process",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"w:/_git/_owned/dab-entraid-auth/SpeakersDB/SpeakersDB.sqlproj"
+			],
+			"problemMatcher": "$sqlproj-problem-matcher",
+			"isBackground": true,
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "Builds the SpeakersDB SQL project"
+		}
+	]
+}
